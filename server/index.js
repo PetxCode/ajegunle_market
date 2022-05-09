@@ -10,7 +10,9 @@ app.use(express.json());
 app.use("/api/user", require("./router/userRouter"));
 app.use("/api/user", require("./otherController/userUpload"));
 
-app.use("/api/content", require("./otherController/contentUpload"));
+app.use("/api/content/", require("./otherController/contentUpload"));
+
+app.use("/api/rating/", require("./otherController/ratingContent"));
 
 app.listen(port, () => {
 	console.log("server is now connected");

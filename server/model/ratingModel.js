@@ -6,7 +6,7 @@ const ratingModel = mongoose.Schema(
 		},
 
 		user: { type: mongoose.Schema.Types.ObjectId, ref: "users" },
-		content: { type: mongoose.Schema.Types.ObjectId, ref: "contents" },
+		// content: { type: mongoose.Schema.Types.ObjectId, ref: "contents" },
 	},
 
 	{ timestamps: true }

@@ -21,6 +21,8 @@ const userModel = mongoose.Schema(
 			type: Boolean,
 		},
 		content: [{ type: mongoose.Schema.Types.ObjectId, ref: "contents" }],
+
+		rating: [{ type: mongoose.Schema.Types.ObjectId, ref: "ratings" }],
 	},
 
 	{ timestamps: true }

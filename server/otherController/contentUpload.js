@@ -1,127 +1,151 @@
 const express = require("express");
 const router = express.Router();
 const cloudinary = require("../utils/cloudinary");
-const contentModel = require("../model/contentModel");
+const verify = require("../utils/authorize");
 const { image } = require("../utils/multer");
-const verification = require("../utils/authorize");
+const userModel = require("../model/userModel");
+const contentModel = require("../model/contentModel");
 
-router.get("/", async (req, res) => {
+router.post("/:id/createContent", verify, image, async (req, res) => {
 	try {
-		const getContent = await contentModel.find();
-		res.status(200).json({
-			message: "success",
-			data: getContent,
-		});
-	} catch (error) {
-		res.status(500).json({
-			message: err.message,
-		});
-	}
-});
-
-router.get("/:id", async (req, res) => {
-	try {
-		const getContent = await contentModel.findById(req.params.id);
-		res.status(200).json({
-			message: "success",
-			data: getContent,
-		});
-	} catch (error) {
-		res.status(500).json({
-			message: err.message,
-		});
-	}
-});
-
-router.delete("/:id", verification, async (req, res) => {
-	if (req.user.seller === true) {
-		try {
-			await contentModel.findByIdAndDelete(req.params.id);
-			res.status(201).json({
-				message: "deleted",
-			});
-		} catch (error) {
-			res.status(500).json({
-				message: err.message,
-			});
-		}
-	} else {
-		res.status(200).json({
-			message: "You cannot carry out this Operation ",
-		});
-	}
-});
-
-router.post("/", verification, image, async (req, res) => {
-	if (req.user.seller === true) {
-		try {
+		if (req.user.seller === true) {
 			const { description, title, price, category } = req.body;
-
-			const myImage = await cloudinary.uploader.upload(req.file.path);
-
-			const getContent = await contentModel.create({
+			const cloudImage = await cloudinary.uploader.upload(req.file.path);
+			const getUser = await userModel.findById(req.params.id);
+			const getContent = new contentModel({
 				description,
 				title,
 				price,
 				category,
-				image: myImage.secure_url,
-				imageID: myImage.public_id,
+				image: cloudImage.secure_url,
+				imageID: cloudImage.public_id,
 			});
 
-			res.status(200).json({
-				message: "success",
+			getContent.user = getUser;
+			getContent.save();
+
+			getUser.content.push(getContent);
+			getUser.save();
+
+			res.status(201).json({
+				status: "content created",
 				data: getContent,
 			});
-		} catch (error) {
-			res.status(500).json({
-				message: err.message,
+		} else {
+			res.status(404).json({
+				message: "You can't carry out this Operation",
 			});
 		}
-	} else {
-		res.status(200).json({
-			message: "You cannot carry out this Operation ",
+	} catch (err) {
+		res.status(404).json({
+			message: err.message,
 		});
 	}
 });
 
-router.patch("/:id", verification, image, async (req, res) => {
-	if (req.user.seller === true) {
+router.get("/:id/viewContent", async (req, res) => {
+	try {
+		const getUser = await userModel.findById(req.params.id).populate("content");
+
+		res.status(201).json({
+			status: "view contents",
+			data: getUser,
+		});
+	} catch (err) {
+		res.status(404).json({
+			message: err.message,
+		});
+	}
+});
+
+router.get("/:id/viewContent/:contentID", async (req, res) => {
+	try {
+		const getUser = await contentModel
+			.findById(req.params.contentID)
+			.populate("user");
+
+		res.status(201).json({
+			status: "view contents",
+			data: getUser,
+		});
+	} catch (err) {
+		res.status(404).json({
+			message: err.message,
+		});
+	}
+});
+
+router.delete("/:id/viewContent/:contentID", verify, async (req, res) => {
+	try {
+		if (req.user.seller === true) {
+			const getUser = await userModel.findById(req.params.id);
+
+			const deleteData = await contentModel.findByIdAndDelete(
+				req.params.contentID
+			);
+
+			getUser.content.pull(deleteData);
+			getUser.save();
+
+			res.status(201).json({
+				status: "content deleted",
+				data: getUser,
+			});
+		} else {
+			res.status(404).json({
+				message: "Sorry you can do this!",
+			});
+		}
+	} catch (err) {
+		res.status(404).json({
+			message: err.message,
+		});
+	}
+});
+
+router.patch(
+	"/:id/viewContent/:contentID/updateContent",
+	verify,
+	image,
+	async (req, res) => {
 		try {
-			const newContent = await contentModel.findById(req.params.id);
+			if (req.user.seller === true) {
+				const check = await contentModel.findById(req.params.contentID);
 
-			if (newContent) {
-				const { description, title, price, category } = req.body;
-				await cloudinary.uploader.destroy(newContent.avatarID);
-				const myImage = await cloudinary.uploader.upload(req.file.path);
+				if (check) {
+					const { description, title, price, category } = req.body;
+					await cloudinary.uploader.destroy(check.imageID);
+					const cloudImage = await cloudinary.uploader.upload(req.file.path);
 
-				const getContent = await contentModel.findByIdAndUpdate(
-					req.params.id,
-					{
-						description,
-						title,
-						price,
-						category,
-						image: myImage.secure_url,
-						imageID: myImage.public_id,
-					},
-					{ new: true }
-				);
+					const getUser = await contentModel.findByIdAndUpdate(
+						req.params.contentID,
+						{
+							description,
+							title,
+							price,
+							category,
+							image: cloudImage.secure_url,
+							imageID: cloudImage.public_id,
+						},
+						{ new: true }
+					);
 
-				res.status(200).json({
-					message: "success",
-					data: getContent,
+					res.status(201).json({
+						status: "view contents",
+						data: getUser,
+					});
+				}
+			} else {
+				res.status(404).json({
+					message: "Sorry you can do this!",
 				});
 			}
-		} catch (error) {
-			res.status(500).json({
+		} catch (err) {
+			res.status(404).json({
 				message: err.message,
 			});
 		}
-	} else {
-		res.status(200).json({
-			message: "You cannot carry out this Operation ",
-		});
 	}
-});
+);
 
 module.exports = router;

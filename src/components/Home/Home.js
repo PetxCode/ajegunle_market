@@ -1,41 +1,32 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
+import ServiceSlider from "../Services/ServiceSlider";
 
-const Home = () => {
-	const dot = useRef();
-	const dot1 = useRef();
-	const dot2 = useRef();
-	const dot3 = useRef();
-
-	const dotColor = ["gray", "white", "white", "white"];
-	const dotColor1 = ["white", "gray", "white", "white"];
-	const dotColor2 = ["white", "white", "gray", "white"];
-	const dotColor3 = ["white", "white", "white", "gray"];
-
+export default function Home() {
 	const slider = [
 		{
 			id: 1,
-			name: "Peter",
-			title: "Developer",
-			image: "TD",
+			title: "Find the perfect freelance services for your business",
+			author: "Dev Lulu, Frontend Engineer",
+			image: "/assets/s1.jpg",
 		},
 		{
 			id: 2,
-			name: "Peter2",
-			title: "Developer2",
-			image: "T",
+			title: "Aj Market place is under construction",
+			author: "Dev Preshi, Backend Engineer",
+			image: "/assets/s2.jpg",
 		},
 		{
 			id: 3,
-			name: "Peter3",
-			title: "Developer3",
-			image: "D",
+			title: "The first market place in the whole Ajegunle",
+			author: "Dev Blessing, Snr Engineer",
+			image: "/assets/s3.jpg",
 		},
 		{
 			id: 4,
-			name: "Peter4",
-			title: "Developer3",
-			image: "E",
+			title: "Buy and sell at ease we are always there for you to earn",
+			author: "Dev Cythia, Project Manager",
+			image: "/assets/s4.jpg",
 		},
 	];
 
@@ -51,61 +42,84 @@ const Home = () => {
 		}, 3000);
 	}, []);
 
-	useEffect(() => {
-		dot.current.style.backgroundColor = dotColor[count % dotColor.length];
-		dot.current.style.transition = "all 350ms";
-
-		dot1.current.style.backgroundColor = dotColor1[count % dotColor1.length];
-		dot1.current.style.transition = "all 350ms";
-
-		dot2.current.style.backgroundColor = dotColor2[count % dotColor2.length];
-		dot2.current.style.transition = "all 350ms";
-
-		dot3.current.style.backgroundColor = dotColor3[count % dotColor3.length];
-		dot3.current.style.transition = "all 350ms";
-	}, [count]);
-
 	return (
-		<Container>
-			<div>{count}</div>
-			<div>{slider[count % slider.length].name}</div>
-			<div>{slider[count % slider.length].title}</div>
-			<div>{slider[count % slider.length].image}</div>
-
-			<Div>
-				<Dot ref={dot} />
-				<Dot ref={dot1} />
-				<Dot ref={dot2} />
-				<Dot ref={dot3} />
-			</Div>
-		</Container>
+		<>
+			<Container>
+				<Background>
+					<img src={slider[count % slider.length].image} alt="" />
+				</Background>
+				<Content>
+					<Tag>
+						<Info>{slider[count % slider.length].title}</Info>
+						<Border>
+							<Span>Design</Span>
+							<Span>Thinkng</Span>
+							<Span>CodeLab</Span>
+							<Span>Germent</Span>
+						</Border>
+					</Tag>
+					<Details>
+						<Author>{slider[count % slider.length].author}</Author>
+					</Details>
+				</Content>
+			</Container>
+			<ServiceSlider />
+		</>
 	);
-};
-
-export default Home;
-
-const Div = styled.div`
-	margin-top: 100px;
-	display: flex;
-`;
-
-const Dot = styled.div`
-	width: 10px;
-	height: 10px;
-	border-radius: 50%;
-	background-color: white;
-	margin: 0 5px;
-`;
+}
 
 const Container = styled.div`
-	width: 100%;
-	height: 150vh;
-	background-color: blue;
-	padding-top: 100px;
+	color: #fff;
+	padding-top: 60px;
 	display: flex;
 	justify-content: center;
-	align-items: center;
-	font-size: 30px;
-	color: white;
+	width: 100%;
+	height: calc(100vh - 60px);
 	flex-direction: column;
+	position: relative;
+`;
+const Content = styled.div`
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	height: 100vh;
+`;
+const Background = styled.div`
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	position: absolute;
+	z-index: -1;
+
+	img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+`;
+const Tag = styled.div`
+	margin: 10px;
+	margin-top: 150px;
+`;
+const Author = styled.div``;
+const Span = styled.span`
+	border: 2px solid #fff;
+	border-radius: 15px;
+	padding: 6px;
+`;
+const Info = styled.h2`
+	font-size: 3rem;
+	width: 650px;
+`;
+const Details = styled.div`
+	display: flex;
+	justify-content: flex-end;
+	margin: 10px;
+`;
+const Border = styled.div`
+	display: flex;
+	width: 400px;
+	justify-content: space-between;
+	margin-top: -20px;
 `;
